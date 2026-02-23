@@ -37,4 +37,4 @@ jobs:
           file: ./dockerfile
           push: true
           # La etiqueta debe empezar con ghcr.io/ y estar todo en minúsculas
-          tags: ghcr.io/perfumeriapoli/perfumes-back:latest
+          tags: ghcr.io/tiagoruckj/perfumes-back:latest
