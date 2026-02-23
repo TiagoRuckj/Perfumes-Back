@@ -1,0 +1,30 @@
+name: Build Docker Image
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # Permite ejecutar el flujo manualmente desde la pestaña "Actions"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Clona el código del repositorio en la máquina virtual
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      # 2. Configura Docker Buildx (herramienta avanzada para construir imágenes)
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Construye la imagen Docker
+      - name: Construir imagen Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./dockerfile  # Usa el archivo dockerfile que está en tu repo
+          push: false         # Está en false porque por ahora solo la estamos construyendo, no subiendo
+          tags: perfumeriapoli/perfumes-back:latest
