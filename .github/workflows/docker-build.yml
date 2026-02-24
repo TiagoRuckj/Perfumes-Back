@@ -1,4 +1,4 @@
-name: Build and Publish Docker Image
+name: Build and Publish Back and DB Images
 
 on:
   push:
@@ -7,7 +7,9 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # Definimos nombres base para las dos imágenes
+  BACK_IMAGE_NAME: ${{ github.repository }}
+  DB_IMAGE_NAME: ${{ github.repository_owner }}/perfumes-db
 
 jobs:
   build-and-push:
@@ -27,24 +29,39 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extraer metadatos
-        id: meta
+      # --- CONFIGURACIÓN PARA EL BACKEND ---
+      - name: Metadatos Backend
+        id: meta_back
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.BACK_IMAGE_NAME }}
           tags: |
             type=ref,event=branch
             type=sha,format=short
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
-      - name: Configurar Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Construir y subir imagen Docker
+      - name: Construir y subir Backend
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta_back.outputs.tags }}
+          labels: ${{ steps.meta_back.outputs.labels }}
+
+      # --- CONFIGURACIÓN PARA LA BASE DE DATOS ---
+      - name: Metadatos DB
+        id: meta_db
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.DB_IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+
+      - name: Construir y subir DB
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./db.dockerfile
+          push: true
+          tags: ${{ steps.meta_db.outputs.tags }}
+          labels: ${{ steps.meta_db.outputs.labels }}
